@@ -1,0 +1,112 @@
+package com.sample
+ 
+
+rule "Hay turno"
+	when
+		t : Turno ()
+	then
+        System.out.println( "Turno : " + t.getTurno () );
+end        
+
+rule "Hay celda"
+salience 1
+	when
+		c: Celda ()
+	then
+        System.out.println( c.getI () + " " + c.getJ () + " " + c.getValor () );
+end        
+
+rule "Hay turno y es el suyo"
+	when
+		t : Turno (turno == Turno.SU_TURNO)
+	then
+	    Triqui.leerTurno();
+        t.setTurno (Turno.MI_TURNO);
+        update (t);
+end        
+	
+rule "Gana horizontal"
+	salience 10
+	when
+		t : Turno (turno != Turno.TERMINAR)
+		c1 : Celda ($f : i, $val : valor, $col1 : j, valor != Celda.NADA)
+		c2 : Celda ($f == i, $val == valor, $col2 : j, $col2 == $col1 + 1)
+		c3 : Celda ($f == i, $val == valor, $col3 : j, $col3 == $col2 + 1)
+	then
+        System.out.println( "Ganó el " + $val );
+        t.setTurno (Turno.TERMINAR);
+        update (t);
+end		
+
+rule "Gana vertical"
+	salience 10
+	when
+		t : Turno (turno != Turno.TERMINAR)
+		c1 : Celda ($c : j, $val : valor, $fil1 : i && valor != Celda.NADA)
+		c2 : Celda ($c == j, $val == valor, $fil2 : i, $fil2 == $fil1 + 1)
+		c3 : Celda ($c == j, $val == valor, $fil3 : i, $fil3 == $fil2 + 1)
+	then
+        System.out.println( "Ganó el " + $val );
+        t.setTurno (Turno.TERMINAR);
+        update (t);
+end		
+		
+rule "Gana diagonal"
+	salience 10
+	when
+		t : Turno (turno != Turno.TERMINAR)
+		c1 : Celda ($c0 : j && $c0 ==0, $val : valor, $fil0 : i &&  $fil0 == 0 && valor != Celda.NADA)
+		c2 : Celda ($c1 : j && $c1 ==1, $val == valor, $fil1 : i &&  $fil1 == 1 )
+		c3 : Celda ($c2 : j && $c2 ==2, $val == valor, $fil2 : i &&  $fil2 == 2 )
+	then
+        System.out.println( "Ganó el " + $val );
+        t.setTurno (Turno.TERMINAR);
+        update (t);
+end		
+
+rule "Gana diagonal invertida"
+	salience 10
+	when
+		t : Turno (turno != Turno.TERMINAR)
+		c1 : Celda ($c0 : j && $c0 ==0, $val : valor, $fil0 : i &&  $fil0 == 2 && valor != Celda.NADA)
+		c2 : Celda ($c1 : j && $c1 ==1, $val == valor, $fil1 : i &&  $fil1 == 1 )
+		c3 : Celda ($c2 : j && $c2 ==2, $val == valor, $fil2 : i &&  $fil2 == 0 )
+	then
+        System.out.println( "Ganó el " + $val );
+        t.setTurno (Turno.TERMINAR);
+        update (t);
+end		
+
+rule "Hay turno y es el mio si OES va a ganar horizontal 0"
+	salience 8
+	when
+		t : Turno (turno == Turno.MI_TURNO)
+		c1 : Celda ($f : i, $val0 : valor, $col1 : j)
+		c2 : Celda ($f == i, $val1 : valor, $col2 : j, $col2 == $col1 + 1)
+		c3 : Celda ($f == i, $val2 : valor, $col3 : j, $col3 == $col2 + 1)
+		eval (($val0==Celda.OES && $val1==Celda.OES && $val2==Celda.NADA )||
+		($val0==Celda.OES && $val1==Celda.NADA && $val2==Celda.OES )||
+		($val0==Celda.NADA && $val1==Celda.OES && $val2==Celda.OES ))
+	then
+        System.out.println( "Es mi turno 22" );
+        if(c1.esVacia())
+    		c1.setValor(Celda.EQUIS);
+        else if(c2.esVacia())
+    		c2.setValor(Celda.EQUIS);
+        else 
+    		c3.setValor(Celda.EQUIS);
+        t.setTurno (Turno.SU_TURNO);
+        Triqui.imprimirSession();
+        update (t);
+end        
+
+		
+rule "Hay turno y es el mio"
+	when
+		t : Turno (turno == Turno.MI_TURNO)
+	then
+        t.setTurno (Turno.SU_TURNO);
+        update (t);
+end        
+
+
